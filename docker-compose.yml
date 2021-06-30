@@ -1,0 +1,29 @@
+version: "2"
+
+services:
+  db:
+    image: mariadb:latest
+    volumes:
+      - mariadb_data:/var/lib/mariadb/data
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=todoListFastApi
+  web_api:
+    build: .
+    volumes:
+      - ./:/code
+    ports:
+      - 8080:8080
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - MYSQL_ROOT_PASSWORD=root
+      - DATABASE_URL=mysql://root:root@db/todoListFastApi
+    depends_on:
+      - db
+    links:
+      - db
+    command: ["./scripts/wait-for-db.sh","--","uvicorn","src.main:app","--reload","--workers 1","--host 0.0.0.0","--port 8080"]
+
+volumes:
+  mariadb_data:
